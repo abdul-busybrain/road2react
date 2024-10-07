@@ -1,4 +1,14 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const useStorageState = (key, initialState) => {
+  const [value, setValue] = useState(localStorage.getItem(key) || initialState);
+
+  useEffect(() => {
+    localStorage.setItem(key, value);
+  }, [value, key]);
+
+  return [value, setValue];
+};
 
 export default function App() {
   const stories = [
@@ -20,24 +30,29 @@ export default function App() {
     },
   ];
 
-  const [searchTerm, setSearchTerm] = useState("React");
+  const [searchTerm, setSearchTerm] = useState("Search", "React");
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
 
   const searchedStories = stories.filter((story) =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // A
-  const handleSearch = (event) => {
-    // D
-    setSearchTerm(event.target.value);
-  };
-
   return (
     <div>
       <h1>My Hacker Stories</h1>
 
-      {/* // B */}
-      <Search onSearch={handleSearch} search={searchTerm} />
+      <InputWithLabel
+        id="search"
+        label="Search"
+        value={searchTerm}
+        isFocused
+        onInputChange={handleSearch}
+      >
+        <strong> Search:</strong>
+      </InputWithLabel>
 
       <hr />
 
@@ -46,31 +61,57 @@ export default function App() {
   );
 }
 
-const Search = ({ search, onSearch }) => {
+const InputWithLabel = ({
+  id,
+  value,
+  type = "text",
+  onInputChange,
+  isFocused,
+  children,
+}) => {
+  // A
+  const inputRef = useRef();
+
+  // C
+  useEffect(() => {
+    if (isFocused && inputRef.current) {
+      // D
+      inputRef.current.focus();
+    }
+  }, [isFocused]);
+
   return (
-    <div>
-      <label htmlFor="search">Search: </label>
-      <input id="search" type="text" value={search} onChange={onSearch} />
-    </div>
+    <>
+      <label htmlFor={id}>{children}</label>&nbsp;
+      {/* B */}
+      <input
+        ref={inputRef}
+        id={id}
+        type={type}
+        value={value}
+        autoFocus={isFocused}
+        onChange={onInputChange}
+      />
+    </>
   );
 };
 
 const List = ({ list }) => {
   return (
     <ul>
-      {list.map(({ objectID, ...item }) => (
-        <Item key={objectID} {...item} />
+      {list.map((item) => (
+        <Item key={item.objectID} item={item} />
       ))}
     </ul>
   );
 };
-const Item = ({ title, url, author, num_comments, points }) => (
+const Item = ({ item }) => (
   <li>
     <span>
-      <a href={url}> {title}</a>
+      <a href={item.url}> {item.title}</a>
     </span>
-    <span> {author}</span>
-    <span>{num_comments}</span>
-    <span>{points}</span>
+    <span> {item.author}</span>
+    <span>{item.num_comments}</span>
+    <span>{item.points}</span>
   </li>
 );
