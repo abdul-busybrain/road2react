@@ -1,3 +1,4 @@
+import { type } from "@testing-library/user-event/dist/type";
 import { useEffect, useRef, useState } from "react";
 
 const useStorageState = (key, initialState) => {
@@ -34,22 +35,40 @@ const getAsyncStories = () =>
     setTimeout(() => resolve({ data: { stories: initialStories } }), 2000)
   );
 
-export default function App() {
-  const [searchTerm, setSearchTerm] = useState("Search", "React");
+const storiesReducer = (state, action) => {
+  switch (action.type) {
+    case "SET_STORIES":
+      return action.payload;
+    case "REMOVE_STORY":
+      return state.filter(
+        (story) => action.payload.objectID !== story.objectID
+      );
+    default:
+      throw new Error();
+  }
+};
 
-  const [stories, setStories] = useState([]);
+export default function App() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [stories, dispatchStories] = useState(storiesReducer, []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
-    getAsyncStories().then((result) => {
-      setStories(result.data.stories);
-    });
+    setIsLoading(true);
+    getAsyncStories()
+      .then((result) => {
+        dispatchStories({ type: "SET_STORIES", payload: result.data.stories });
+        setIsLoading(false);
+      })
+      .catch(() => setIsError(true));
   }, []);
 
   const handleRemoveStory = (item) => {
-    const newStories = stories.filter(
-      (story) => item.objectID !== story.objectID
-    );
-    setStories(newStories);
+    dispatchStories({
+      type: "REMOVE_STORY",
+      payload: item,
+    });
   };
 
   const handleSearch = (event) => {
@@ -61,24 +80,40 @@ export default function App() {
   );
 
   return (
-    <div>
-      <h1>My Hacker Stories</h1>
+    <>
+      <div>
+        <h1>My Hacker Stories</h1>
 
-      <InputWithLabel
-        id="search"
-        label="Search"
-        value={searchTerm}
-        isFocused
-        onInputChange={handleSearch}
-      >
-        <strong> Search:</strong>
-      </InputWithLabel>
+        <InputWithLabel
+          id="search"
+          label="Search"
+          value={searchTerm}
+          isFocused
+          onInputChange={handleSearch}
+        >
+          <strong> Search:</strong>
+        </InputWithLabel>
 
-      <hr />
+        <hr />
 
-      <List list={searchedStories} onRemoveItem={handleRemoveStory} />
-    </div>
+        {isError && <Error />}
+
+        {isLoading ? (
+          <Loader />
+        ) : (
+          <List list={searchedStories} onRemoveItem={handleRemoveStory} />
+        )}
+      </div>
+    </>
   );
+}
+
+function Loader() {
+  return <p>Loading...</p>;
+}
+
+function Error() {
+  return <p>Something went wrong...</p>;
 }
 
 const InputWithLabel = ({
