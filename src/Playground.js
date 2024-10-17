@@ -1,30 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function App() {
+const style = {
+  padding: "10px 30px",
+  border: "1px solid black",
+  display: "block",
+};
+
+export default function Ap() {
   const [count, setCount] = useState(0);
-  const handleClick = () => {
-    setCount(count + 1);
-  };
+  const [isActive, setIsActive] = useState(false);
 
-  const [text, setText] = useState("");
-  // 1
-  const handleTextChange = (event) => {
-    setText(event.target.value);
-  };
+  function handleDivClick(event) {
+    alert(
+      `<div/> \n event.target: ${event.target} \n event.currentTarget: ${event.currentTarget}`
+    );
+  }
+
+  function handleSpanClick(event) {
+    alert(
+      `<span/> \n event.taget: ${event.target} \n event.currentTarget: ${event.currentTarget}`
+    );
+  }
 
   return (
-    <div>
-      Count: {count}
-      <button type="button" onClick={handleClick}>
-        Increase Count
-      </button>
-      <MyInput inputValue={text} onInputChange={handleTextChange} />
-      {text}
+    <div style={style} onClick={handleDivClick}>
+      <span style={style} onClick={handleSpanClick}>
+        Click me
+      </span>
     </div>
   );
-}
-
-// 2
-function MyInput({ inputValue, onInputChange }) {
-  return <input type="text" value={inputValue} onChange={onInputChange} />;
 }
