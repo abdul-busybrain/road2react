@@ -42,14 +42,15 @@ export default function App() {
 
   return (
     <div>
-      <h1>My Hacker Stories</h1>
+      <h1> Hacker Stories</h1>
 
       <InputWithLabel
         id="search"
-        label="Search"
         value={searchTerm}
         onInputChange={handleSearch}
-      />
+      >
+        <strong> Search:</strong>
+      </InputWithLabel>
 
       <hr />
 
@@ -58,9 +59,15 @@ export default function App() {
   );
 }
 
-const InputWithLabel = ({ id, label, value, type = "text", onInputChange }) => (
+const InputWithLabel = ({
+  id,
+  value,
+  type = "text",
+  onInputChange,
+  children,
+}) => (
   <>
-    <label htmlFor={id}>{label} </label>
+    <label htmlFor={id}>{children} </label>
     &nbsp;
     <input id={id} type={type} value={value} onChange={onInputChange} />
   </>
