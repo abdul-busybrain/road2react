@@ -31,15 +31,22 @@ const useStorageState = (key, initialState) => {
   }, [value, key]);
   return [value, setValue];
 };
+
 const App = () => {
   const [searchTerm, setSearchTerm] = useStorageState("search", "React");
 
   const [stories, setStories] = useState(initialStories);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
-    getAsyncStories().then((result) => {
-      setStories(result.data.stories);
-    });
+    setIsLoading(true);
+    getAsyncStories()
+      .then((result) => {
+        setStories(result.data.stories);
+        setIsLoading(false);
+      })
+      .catch(() => setIsError);
   }, []);
 
   const handleRemoveStory = (item) => {
@@ -48,15 +55,19 @@ const App = () => {
     );
     setStories(newStories);
   };
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
+
   const searchedStories = stories.filter((story) =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
   return (
     <div>
       <h1>My Hacker Stories</h1>
+
       <InputWithLabel
         id="search"
         value={searchTerm}
@@ -65,11 +76,28 @@ const App = () => {
       >
         <strong>Search:</strong>
       </InputWithLabel>
+
       <hr />
-      <List list={searchedStories} onRemoveItem={handleRemoveStory} />
+
+      {isError && <isError />}
+
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <List list={searchedStories} onRemoveItem={handleRemoveStory} />
+      )}
     </div>
   );
 };
+
+function Loader() {
+  return <div>Loading...</div>;
+}
+
+function isError() {
+  return <p>Something went wrong...</p>;
+}
+
 const InputWithLabel = ({
   id,
   value,
@@ -98,6 +126,7 @@ const InputWithLabel = ({
     </>
   );
 };
+
 const List = ({ list, onRemoveItem }) => (
   <ul>
     {list.map((item) => (
@@ -105,6 +134,7 @@ const List = ({ list, onRemoveItem }) => (
     ))}
   </ul>
 );
+
 const Item = ({ item, onRemoveItem }) => (
   <li>
     <span>
@@ -120,4 +150,5 @@ const Item = ({ item, onRemoveItem }) => (
     </span>
   </li>
 );
+
 export default App;
