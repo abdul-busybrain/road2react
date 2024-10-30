@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer, useRef } from "react";
+import { useEffect, useState, useRef, useReducer } from "react";
 
 const initialStories = [
   {
@@ -25,8 +25,12 @@ const getAsyncStories = () =>
 
 const storiesReducer = (state, action) => {
   switch (action.type) {
-    case "SET_STORIES_INIT":
-      return { ...state, isLoading: true, isError: false };
+    case "STORIES_FETCH_INIT":
+      return {
+        ...state,
+        isLoading: true,
+        isError: false,
+      };
     case "STORIES_FETCH_SUCCESS":
       return {
         ...state,
@@ -35,11 +39,15 @@ const storiesReducer = (state, action) => {
         data: action.payload,
       };
     case "STORIES_FETCH_FAILURE":
-      return { ...state, isLoading: false, isError: true };
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
     case "REMOVE_STORY":
       return {
         ...state,
-        data: state.filter(
+        data: state.data.filter(
           (story) => action.payload.objectID !== story.objectID
         ),
       };
@@ -48,7 +56,6 @@ const storiesReducer = (state, action) => {
       throw new Error();
   }
 };
-
 const useStorageState = (key, initialState) => {
   const [value, setValue] = useState(localStorage.getItem(key) || initialState);
   useEffect(() => {
@@ -84,13 +91,14 @@ const App = () => {
       payload: item,
     });
   };
-
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
+
   const searchedStories = stories.data.filter((story) =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
   return (
     <div>
       <h1>My Hacker Stories</h1>
@@ -102,8 +110,11 @@ const App = () => {
       >
         <strong>Search:</strong>
       </InputWithLabel>
+
       <hr />
+
       {stories.isError && <p>Something went wrong ...</p>}
+
       {stories.isLoading ? (
         <p>Loading ...</p>
       ) : (
