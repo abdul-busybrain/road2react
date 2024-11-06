@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useReducer } from "react";
+import { useEffect, useState, useRef, useReducer, useCallback } from "react";
 
 const storiesReducer = (state, action) => {
   switch (action.type) {
@@ -52,11 +52,7 @@ const App = () => {
     isError: false,
   });
 
-  useEffect(() => {
-    // if `searchTerm` is not present
-    // e.g null, empty string, undefined
-    // do nothing
-    // more generalized condition than searchTerm === ''
+  const handleFetchStories = useCallback(() => {
     if (!searchTerm) return;
 
     dispatchStories({ type: "STORIES_FETCH_INIT" });
@@ -71,6 +67,10 @@ const App = () => {
       })
       .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
   }, [searchTerm]);
+
+  useEffect(() => {
+    handleFetchStories();
+  }, [handleFetchStories]);
 
   const handleRemoveStory = (item) => {
     dispatchStories({
