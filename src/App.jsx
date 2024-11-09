@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useState, useRef, useReducer, useCallback } from "react";
 
 const storiesReducer = (state, action) => {
@@ -59,12 +60,12 @@ const App = () => {
 
     dispatchStories({ type: "STORIES_FETCH_INIT" });
 
-    fetch(url)
-      .then((response) => response.json())
+    axios
+      .get(url)
       .then((result) => {
         dispatchStories({
           type: "STORIES_FETCH_SUCCESS",
-          payload: result.hits,
+          payload: result.data.hits,
         });
       })
       .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
