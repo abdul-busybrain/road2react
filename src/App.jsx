@@ -46,6 +46,8 @@ const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 const App = () => {
   const [searchTerm, setSearchTerm] = useStorageState("search", "React");
 
+  const [url, setUrl] = useState(`${API_ENDPOINT}${searchTerm}`);
+
   const [stories, dispatchStories] = useReducer(storiesReducer, {
     data: [],
     isLoading: false,
@@ -57,7 +59,7 @@ const App = () => {
 
     dispatchStories({ type: "STORIES_FETCH_INIT" });
 
-    fetch(`${API_ENDPOINT}${searchTerm}`)
+    fetch(url)
       .then((response) => response.json())
       .then((result) => {
         dispatchStories({
@@ -66,7 +68,7 @@ const App = () => {
         });
       })
       .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
-  }, [searchTerm]);
+  }, [url]);
 
   useEffect(() => {
     handleFetchStories();
@@ -78,8 +80,13 @@ const App = () => {
       payload: item,
     });
   };
-  const handleSearch = (event) => {
+
+  const handleSearchInput = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleSearchSubmit = () => {
+    setUrl(`${API_ENDPOINT}${searchTerm}`);
   };
 
   const searchedStories = stories.data.filter((story) =>
@@ -93,10 +100,13 @@ const App = () => {
         id="search"
         value={searchTerm}
         isFocused
-        onInputChange={handleSearch}
+        onInputChange={handleSearchInput}
       >
         <strong>Search:</strong>
       </InputWithLabel>
+      <button type="button" disabled={!searchTerm} onClick={handleSearchSubmit}>
+        Submit
+      </button>
 
       <hr />
 
