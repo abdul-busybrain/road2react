@@ -59,10 +59,8 @@ const App = () => {
     if (!searchTerm) return;
 
     dispatchStories({ type: "STORIES_FETCH_INIT" });
-
     try {
       const result = await axios.get(url);
-
       dispatchStories({
         type: "STORIES_FETCH_SUCCESS",
         payload: result.data.hits,
@@ -70,7 +68,7 @@ const App = () => {
     } catch {
       dispatchStories({ type: "STORIES_FETCH_FAILURE" });
     }
-  }, [url]);
+  }, [url, searchTerm]);
 
   useEffect(() => {
     handleFetchStories();
