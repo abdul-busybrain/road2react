@@ -1,5 +1,12 @@
 import axios from "axios";
-import { useEffect, useState, useRef, useReducer, useCallback } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  useReducer,
+  useCallback,
+  memo,
+} from "react";
 
 import styles from "./App.module.css";
 
@@ -38,9 +45,17 @@ const storiesReducer = (state, action) => {
 };
 
 const useStorageState = (key, initialState) => {
+  const isMounted = useRef(false);
+
   const [value, setValue] = useState(localStorage.getItem(key) || initialState);
+
   useEffect(() => {
-    localStorage.setItem(key, value);
+    if (!isMounted.current) {
+      isMounted.current = true;
+    } else {
+      console.log("A");
+      localStorage.setItem(key, value);
+    }
   }, [value, key]);
   return [value, setValue];
 };
@@ -77,12 +92,12 @@ const App = () => {
     handleFetchStories();
   }, [handleFetchStories]);
 
-  const handleRemoveStory = (item) => {
+  const handleRemoveStory = useCallback((item) => {
     dispatchStories({
       type: "REMOVE_STORY",
       payload: item,
     });
-  };
+  }, []);
 
   const handleSearchInput = (event) => {
     setSearchTerm(event.target.value);
@@ -96,6 +111,8 @@ const App = () => {
   const searchedStories = stories.data.filter((story) =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  console.log("B:App");
 
   return (
     <div className={styles.container}>
@@ -153,12 +170,15 @@ const InputWithLabel = ({
   );
 };
 
-const List = ({ list, onRemoveItem }) => (
-  <ul>
-    {list.map((item) => (
-      <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
-    ))}
-  </ul>
+const List = memo(
+  ({ list, onRemoveItem }) =>
+    console.log("B:List") || (
+      <ul>
+        {list.map((item) => (
+          <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
+        ))}
+      </ul>
+    )
 );
 
 const Item = ({ item, onRemoveItem }) => (
