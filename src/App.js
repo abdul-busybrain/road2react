@@ -112,7 +112,7 @@ const App = () => {
     story.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  console.log("B:App");
+  console.log("B: App");
 
   return (
     <div className={styles.container}>
